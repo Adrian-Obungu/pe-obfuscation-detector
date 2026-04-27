@@ -1,173 +1,74 @@
-# PE Binary Obfuscation Detector
+# 🛡️ PE Obfuscation Detector
+### *Advanced Static Forensic Engine for Binary Anomaly Detection*
 
-**Static heuristic analysis engine for detecting packers, crypters, and obfuscation in Windows PE files.**
-
-Author: **Adrian S. Obungu**
-
-Version: 0.1.0  |  License: MIT
-
----
-
-## Overview
-
-`pedetect`  is a pure–Python static analysis tool that ingests a Portable Executable (PE) file and determines whether it has been packed, crypted, or otherwise obfuscated. It uses **six independent heuristic detectors** fused via a weighted scoring engine to produce a verdict: **CLEAN**, **SUSPICIOUS**, or **PACKED** – backed by a full evidence trail.
-
-Designed for malware triage, incident response, and reverse engineering workflows. Zero reliance on execution — **static analysis only.**
+[![Forensic Quality](https://img.shields.io/badge/Forensics-Grade-blueviolet?style=for-the-badge&logo=spyderide)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Environment: Minimal](https://img.shields.io/badge/Environment-Minimal_Ready-success?style=for-the-badge&logo=iphone)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
 
 ---
 
-## Features
+## 🔬 Overview
+**PE Obfuscation Detector** is a high-fidelity static analysis engine designed to strip away the layers of binary protection. Developed with a "Build Slow, Build Sure" philosophy, it focuses on deep-tissue forensic auditing of Portable Executable (PE) files to identify packing, crypting, and anti-analysis patterns.
 
-- **6 Heuristic Engines**
-  - Header integrity (MZ/PE magic, EntryPoint validation, RWX sections)
-  - Section anomalies (packer‑specific names, size discrepancies)
-  - Import table forensics (scarcity, suspicious API combinations, TLS correlation)
-  - Entropy analysis (Shannon entropy per–section and whole–file, crypter pattern)
-  - EP byte signatures (PEID–style wildcard matching, JSON database, 8 signatures)
-  - String cross–reference (fake import detection)
-- **Weighted scoring** via `weights.json` — tune signal importance without code changes
-- **Extensible signature database** — add new packer stubs via JSON
-- **CLI*� with verbose, JSON, and file–output modes
-- **Single dependency** — `pefile` (pure Python, no C extensions)
-- **Codespaces / iPad / minimal–env ready**
+Unlike legacy tools that rely solely on brittle signatures, this engine employs a **Multi-Vector Scoring System** that correlates evidence across entropy variance, import table forensics, and structural integrity checks.
 
 ---
 
-## Installation
+## 🚀 Core Forensic Vectors
+
+| Vector | Description | Forensic Value |
+| :--- | :--- | :--- |
+| **Entropy Variance** | Shannon entropy analysis across discrete sections. | Detects high-density encrypted payloads and packed stubs. |
+| **Import Forensics** | Analysis of IAT patterns and suspicious API combinations. | Identifies dynamic resolution loops and process hollowing stubs. |
+| **Structural Integrity** | Validation of PE headers, EP location, and section characteristics. | Flags RWX sections and non-standard Entry Point placements. |
+| **EP Signatures** | Regex-based matching of known packer stubs at the Entry Point. | Provides high-confidence identification of common protectors (UPX, ASPack, etc.). |
+| **String Cross-Ref** | Correlation between imported APIs and binary string constants. | Detects "fake" imports used to mislead basic static scanners. |
+
+---
+
+## 📊 Visual Intelligence
+The engine doesn't just give you a verdict; it provides a **Visual Forensic Map**:
+
+- **Interactive Heatmaps**: Visualize section-level entropy to pinpoint where the payload is hidden.
+- **Weighted Scoring Tables**: Understand the *why* behind every verdict with a transparent contribution breakdown.
+- **D3.js Interactive Reports**: (Coming Soon) High-end web-based forensics for deep-dive analysis.
+
+---
+
+## 🛠️ Installation & Usage
+
+### Minimal Environment Setup
+Designed to run flawlessly on mobile-first environments (Codespaces, Termux) and standard workstations.
 
 ```bash
-git clone https://github.com/Adrian-Obungu/pe-obfuscation-detector.git
+# Clone the Forensic Engine
+gh repo clone Adrian-Obungu/pe-obfuscation-detector
 cd pe-obfuscation-detector
+
+# Initialize Environment
 pip install -r requirements.txt
 ```
 
----
-
-## Usage
-
+### Execution
 ```bash
-# Basic analysis (text output)
-python -m pedetect.cli sample.exe
+# Basic Analysis
+python -m pedetect.cli target_binary.exe
 
-# Verbose (show all evidence)
-python -m pedetect.cli sample.exe -v
-
-# JSON output (for integration with other tools)
-python -m pedetect.cli sample.exe -o json
-
-# Save to file
-python -m pedetect.cli sample.exe -o json -f result.json
-
-# Custom signature database
-python -m pedetect.cli sample.exe --sigdb my_signatures.json
+# High-Fidelity Forensic Audit (Verbose + Heatmap)
+python -m pedetect.cli target_binary.exe -vv --heatmap
 ```
 
 ---
 
-## Example Output
-
-```
-File: /tmp/test_packed.exe
-MD5:  8e9ced5ffcd8861871f72f8d8b8adc76
-SHA256: 50562d359ba519aac8eac0c72b91e36d168562b6a98a801808a4518f01906ddd
-Size: 864 bytes
-Verdict: PACKED (87.50%)
-
-Evidence:
-  • EP signature match: UPX 2.90+ — UPX standard prologue (confidence: 0.95)
-  • Minimal imports: 0 functions from 0 DLL
-  • Import table stripped (non-DLL)
-  • High entropy section: .text (7.41) — above threshold 7.0
-  • RWX section found: .text
-  • Suspicious section name: UPX0
-```
+## 🗺️ Enhancement Roadmap
+- [ ] **Rich Header Forensics**: MSVC metadata auditing for toolchain identification.
+- [ ] **IAT Redline Analysis**: Detecting hooked or redirected Import Address Tables.
+- [ ] **Verdict Narrative Engine**: AI-driven natural language explanations of detection evidence.
+- [ ] **D3.js Export**: Full interactive HTML forensic reports.
 
 ---
 
-## Heuristic Weight Configuration
+## ⚖️ License & Ethics
+Distributed under the **MIT License**. This tool is intended for security researchers, malware analysts, and students. Use it to build, learn, and defend.
 
-Edit `pedetect/weights.json` to tune sensitivity:
-
-```json
-{
-  "heuristics": {
-    "header_integrity": 0.8,
-    "section_anomalies": 0.7,
-    "import_table": 0.9,
-    "entropy": 0.7,
-    "ep_signature": 0.9,
-    "strings": 0.4
-  }
-}
-```
-
----
-
-## Signature Database
-
-`pedetect/signatures.json` contains 8 known packer signatures (UPX, ASPack, FSG, MPress, PECompact, NSPack, generic crypter stubs). Add new entries by following the schema:
-
-```json
-{
-  "name": "MyPacker",
-  "pattern": "AA BB CC ?? DD DE",
-  "ep_offset": 0,
-  "min_ep_length": 6,
-  "confidence": 0.85,
-  "description": "MyPacker prologue"
-}
-```
-
----
-
-## Project Structure
-
-```
-pe-obfuscation-detector/
-│ ━─ pedetect/
-│   ┄─ cli.py              # CLI entry point
-│   ┄─ core.py             # Orchestrator / scoring engine
-│   ┄─ signatures.json     # EP byte signature database
-│   ┄─ weights.json        # Heuristic weight configuration
-│   ├── heuristics/
-│       ├─ header.py      # Header integrity checks
-│       ├─ sections.py     # Section anomaly detection
-│       ├─ imports.py      # Import table forensics
-│       ├─ entropy.py      # Shannon entropy analysis
-│       ├─ signatures.py    # EP byte pattern matcher
-│       └─ strings_.py     # String cross-reference
-├─ requirements.txt
-├─ README.md
-┄─ LICENSE
-```
-
----
-
-## Dependencies
-
-- Python 3.8+
-+- [pefile](https://github.com/erocarrera/pefile) ≥ 2023.2.7 (pure Python, pip-installable)
-
----
-
-## Roadmap
-
-- [ ] Add ELF and Mach-O support
-- [ ] YARA rule export from evidence
-- [ ] ML–based classification module (optional)
-- [ ] Web frontend / REST API
-- [ ] Real-time filesystem monitoring integration
-
----
-
-## Author
-
-**Adrian S. Obungu**
-- GitHub: [@Adrian-Obungu](https://github.com/Adrian-Obungu)
-- LinkedIn: [Adrian Obungu](https://www.linkedin.com/in/adrian-o-9b4856260/)
-
----
-
-## License
-
-MIT License. See `LICENSE` for details.
+**Built with 🧠 and 💻 by [Adrian Obungu](https://github.com/Adrian-Obungu)**
