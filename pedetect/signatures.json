@@ -1,0 +1,68 @@
+{
+  "signatures": [
+    {
+      "name": "UPX 2.90+",
+      "pattern": "60 BE ?? ?? ?? ?? 8D BE ?? ?? ?? ?? 57 83 CD FF",
+      "ep_offset": 0,
+      "min_ep_length": 14,
+      "confidence": 0.95,
+      "description": "UPX standard prologue: PUSHAD, MOV ESI, LEA EDI, PUSH EDI, OR EBP,-1"
+    },
+    {
+      "name": "UPX 2.x (alternate)",
+      "pattern": "60 BE ?? ?? ?? ?? 8D BE ?? ?? ?? ?? 57",
+      "ep_offset": 0,
+      "min_ep_length": 12,
+      "confidence": 0.85,
+      "description": "UPX shorter prologue variant"
+    },
+    {
+      "name": "ASPack 2.x",
+      "pattern": "E8 03 00 00 00 E9 EB ?? ?? ?? 58 C3",
+      "ep_offset": 0,
+      "min_ep_length": 12,
+      "confidence": 0.90,
+      "description": "ASPack CALL+3 then long JMP"
+    },
+    {
+      "name": "FSG 2.0",
+      "pattern": "87 25 ?? ?? ?? ?? 81 ED ?? ?? ?? ?? 80 BD ?? ?? ?? ?? 00 56 68",
+      "ep_offset": 0,
+      "min_ep_length": 17,
+      "confidence": 0.85,
+      "description": "FSG 2.0 XOR-SUB decompression loop setup"
+    },
+    {
+      "name": "MPress",
+      "pattern": "55 8B EC 83 EC ?? 53 56 57",
+      "ep_offset": 0,
+      "min_ep_length": 9,
+      "confidence": 0.85,
+      "description": "MPress standard function prologue"
+    },
+    {
+      "name": "PECompact",
+      "pattern": "55 8B EC 6A FF 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 51",
+      "ep_offset": 0,
+      "min_ep_length": 20,
+      "confidence": 0.85,
+      "description": "PECompact SEH-based decompression setup"
+    },
+    {
+      "name": "NSPack / North Star",
+      "pattern": "9C 60 E8 00 00 00 00 5D 81 ED ?? ?? ?? ?? 8B DD 83 C5",
+      "ep_offset": 0,
+      "min_ep_length": 17,
+      "confidence": 0.80,
+      "description": "NSPack PUSHFD + PUSHAD + CALL pop"
+    },
+    {
+      "name": "Generic Crypter Stub",
+      "pattern": "68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? FF",
+      "ep_offset": 0,
+      "min_ep_length": 20,
+      "confidence": 0.65,
+      "description": "Long PUSH sequence before CALL — possible crypter"
+    }
+  ]
+}
