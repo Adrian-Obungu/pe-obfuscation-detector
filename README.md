@@ -1,9 +1,13 @@
-# 🛡️ PE Obfuscation Detector
-### *Advanced Static Forensic Engine for Binary Anomaly Detection*
+<div align="center">
+  <img src="https://files.manuscdn.com/user_upload_by_module/session_file/95436842/UzLPtjwGGCdGflng.png" width="100%" alt="PE Obfuscation Detector Banner">
+  <br>
+  <h1>🛡️ PE Obfuscation Detector</h1>
+  <p><i>Advanced Static Forensic Engine for Binary Anomaly Detection</i></p>
 
-[![Forensic Quality](https://img.shields.io/badge/Forensics-Grade-blueviolet?style=for-the-badge&logo=spyderide)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Environment: Minimal](https://img.shields.io/badge/Environment-Minimal_Ready-success?style=for-the-badge&logo=iphone)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
+  [![Forensic Quality](https://img.shields.io/badge/Forensics-Grade-blueviolet?style=for-the-badge&logo=spyderide)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+  [![Environment: Minimal](https://img.shields.io/badge/Environment-Minimal_Ready-success?style=for-the-badge&logo=iphone)](https://github.com/Adrian-Obungu/pe-obfuscation-detector)
+</div>
 
 ---
 
@@ -16,22 +20,51 @@ Unlike legacy tools that rely solely on brittle signatures, this engine employs 
 
 ## 🚀 Core Forensic Vectors
 
-| Vector | Description | Forensic Value |
-| :--- | :--- | :--- |
-| **Entropy Variance** | Shannon entropy analysis across discrete sections. | Detects high-density encrypted payloads and packed stubs. |
-| **Import Forensics** | Analysis of IAT patterns and suspicious API combinations. | Identifies dynamic resolution loops and process hollowing stubs. |
-| **Structural Integrity** | Validation of PE headers, EP location, and section characteristics. | Flags RWX sections and non-standard Entry Point placements. |
-| **EP Signatures** | Regex-based matching of known packer stubs at the Entry Point. | Provides high-confidence identification of common protectors (UPX, ASPack, etc.). |
-| **String Cross-Ref** | Correlation between imported APIs and binary string constants. | Detects "fake" imports used to mislead basic static scanners. |
+<table align="center">
+  <tr>
+    <th>Vector</th>
+    <th>Description</th>
+    <th>Forensic Value</th>
+  </tr>
+  <tr>
+    <td><b>Entropy Variance</b></td>
+    <td>Shannon entropy analysis across discrete sections.</td>
+    <td>Detects high-density encrypted payloads and packed stubs.</td>
+  </tr>
+  <tr>
+    <td><b>Import Forensics</b></td>
+    <td>Analysis of IAT patterns and suspicious API combinations.</td>
+    <td>Identifies dynamic resolution loops and process hollowing stubs.</td>
+  </tr>
+  <tr>
+    <td><b>Structural Integrity</b></td>
+    <td>Validation of PE headers, EP location, and section characteristics.</td>
+    <td>Flags RWX sections and non-standard Entry Point placements.</td>
+  </tr>
+  <tr>
+    <td><b>EP Signatures</b></td>
+    <td>Regex-based matching of known packer stubs at the Entry Point.</td>
+    <td>Provides high-confidence identification of common protectors.</td>
+  </tr>
+  <tr>
+    <td><b>String Cross-Ref</b></td>
+    <td>Correlation between imported APIs and binary string constants.</td>
+    <td>Detects "fake" imports used to mislead basic static scanners.</td>
+  </tr>
+</table>
 
 ---
 
 ## 📊 Visual Intelligence
-The engine doesn't just give you a verdict; it provides a **Visual Forensic Map**:
+The engine provides a **Visual Forensic Map** to interpret binary data at a glance:
 
 - **Interactive Heatmaps**: Visualize section-level entropy to pinpoint where the payload is hidden.
 - **Weighted Scoring Tables**: Understand the *why* behind every verdict with a transparent contribution breakdown.
-- **D3.js Interactive Reports**: (Coming Soon) High-end web-based forensics for deep-dive analysis.
+- **D3.js Interactive Reports**: High-end web-based forensics for deep-dive analysis.
+
+<div align="center">
+  <img src="https://files.manuscdn.com/user_upload_by_module/session_file/95436842/wczLpnlpvihFOOmZ.png" width="200" alt="Logo">
+</div>
 
 ---
 
