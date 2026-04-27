@@ -42,25 +42,44 @@ class EPSignatureMatcher:
         if not ep_section:
             evidence.append('Cannot locate entry point in any section')
             return (0.0, evidence)
+
         section_data = ep_section.get_data()
-        ep_bytes = section_data[ep_offset:ep_offset + 64]
-        if len(ep_bytes) < 4:
+        if not section_data:
             return (0.0, [])
-        ep_hex = self._bytes_to_hex(ep_bytes)
+
+        # Read up to 256 bytes from EP (or until end of section)
+        ep_window = section_data[ep_offset:ep_offset + 256]
+        if len(ep_window) < 4:
+            return (0.0, [])
+
+        ep_hex = self._bytes_to_hex(ep_window)
         matches = []
         for sig in self.signatures:
             min_len = sig.get('min_ep_length', 0)
-            if len(ep_bytes) < min_len:
+            if len(ep_window) < min_len:
                 continue
             pattern = sig['pattern'].replace(' ', '')
+            # Convert wildcard pattern to regex
             regex_str = pattern.replace('??', '[0-9A-F]{2}')
-            regex = re.compile(f'^{regex_str}')
-            if regex.match(ep_hex):
+            # Try anchored match at exact EP first
+            regex_anchored = re.compile(f'^{regex_str}')
+            match_result = regex_anchored.search(ep_hex)
+            # If not at EP, try anywhere in the window (catches junk bytes)
+            if not match_result:
+                regex_unanchored = re.compile(regex_str)
+                match_result = regex_unanchored.search(ep_hex)
+                if match_result:
+                    evidence.append(
+                        f"EP offset match for {sig['name']}: pattern found "
+                        f"at byte offset {match_result.start() // 2}"
+                    )
+            if match_result:
                 matches.append({
                     'name': sig['name'],
                     'confidence': sig.get('confidence', 0.8),
                     'description': sig.get('description', '')
                 })
+
         if matches:
             best = max(matches, key=lambda m: m['confidence'])
             evidence.append(

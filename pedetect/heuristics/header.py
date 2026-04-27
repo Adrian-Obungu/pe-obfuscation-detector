@@ -2,11 +2,12 @@
 """Heuristic 1: PE header integrity checks."""
 import pefile
 
-# Raw section characteristics flags (independent of pefile constant names)
-IMAGE_SCN_MEM_EXECUTE = 0x20000000
-IMAGE_SCN_MEM_WRITE   = 0x80000000
+# Use pefile's own constants when available
+IMAGE_SCN_MEM_EXECUTE = getattr(pefile, 'IMAGE_SCN_MEM_EXECUTE', 0x20000000)
+IMAGE_SCN_MEM_WRITE  = getattr(pefile, 'IMAGE_SCN_MEM_WRITE', 0x80000000)
 
 def check_header_integrity(pe: pefile.PE) -> tuple:
+    """Validate PE header structure and flag anomalies."""
     evidence = []
     scores = []
     if pe.DOS_HEADER.e_magic != 0x5A4D:
