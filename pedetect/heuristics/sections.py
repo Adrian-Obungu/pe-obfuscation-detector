@@ -1,26 +1,17 @@
 # pedetect/heuristics/sections.py
 """Heuristic 2: Section table anomalies detection."""
 import pefile
+from pedetect.config_loader import _load_config
 
-SUSPICIOUS_SECTION_NAMES = {
-    'UPX0', 'UPX1', 'UPX2',
-    '.aspack', '.adata',
-    '.MPRESS1', '.MPRESS2',
-    '.petite',
-    '.winapi',
-    'pec1', 'pec2', 'pec',
-    '.nsp0', '.nsp1', '.nsp2',
-    '.yP', '.y0da',
-    '.enigma',
-    '.vmp0', '.vmp1',
-    '.themida',
-    '.sforce',
-    '.safedisc',
-    '.securom',
-    '.ndrv',
-}
+CONFIG = _load_config().get("sections", {})
+SUSPICIOUS_SECTION_NAMES = set(CONFIG.get("suspicious_names", []))
+MIN_NORMAL_COUNT = CONFIG.get("min_normal_count", 3)
+MAX_NORMAL_COUNT = CONFIG.get("max_normal_count", 8)
+RATIO_HIGH = CONFIG.get("raw_virtual_ratio_high", 5.0)
+RATIO_LOW = CONFIG.get("raw_virtual_ratio_low", 0.2)
 
 def check_section_anomalies(pe: pefile.PE) -> tuple:
+    """Check for section anomalies including suspicious names and sizes."""
     evidence = []
     scores = []
 
@@ -35,10 +26,10 @@ def check_section_anomalies(pe: pefile.PE) -> tuple:
                 break
 
     section_count = len(pe.sections)
-    if section_count < 3:
+    if section_count < MIN_NORMAL_COUNT:
         evidence.append(f'Low section count: {section_count}')
         scores.append(0.4)
-    elif section_count > 8:
+    elif section_count > MAX_NORMAL_COUNT:
         evidence.append(f'High section count: {section_count}')
         scores.append(0.3)
 
@@ -62,10 +53,10 @@ def check_section_anomalies(pe: pefile.PE) -> tuple:
         if raw_size == 0 or virtual_size == 0:
             continue
         ratio = raw_size / virtual_size
-        if ratio > 5.0:
+        if ratio > RATIO_HIGH:
             evidence.append(f'Section {name}: RawSize/VirtualSize ratio = {ratio:.1f}')
             scores.append(0.5)
-        elif ratio < 0.2:
+        elif ratio < RATIO_LOW:
             evidence.append(f'Section {name}: RawSize/VirtualSize ratio = {ratio:.2f}')
             scores.append(0.6)
 

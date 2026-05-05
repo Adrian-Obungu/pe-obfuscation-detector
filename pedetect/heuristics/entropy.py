@@ -3,12 +3,15 @@
 import math
 from collections import Counter
 import pefile
+from pedetect.config_loader import _load_config
 
-HIGH_ENTROPY_THRESHOLD = 7.0
-WHOLE_FILE_THRESHOLD = 6.8
-LOW_ENTROPY_THRESHOLD = 5.5
-HIGH_RSRC_THRESHOLD = 7.0
-LOW_VARIANCE_THRESHOLD = 0.3
+CONFIG = _load_config().get("entropy", {})
+HIGH_ENTROPY_THRESHOLD = CONFIG.get("high_entropy_threshold", 7.0)
+WHOLE_FILE_THRESHOLD = CONFIG.get("whole_file_threshold", 6.8)
+LOW_ENTROPY_THRESHOLD = CONFIG.get("low_entropy_threshold", 5.5)
+HIGH_RSRC_THRESHOLD = CONFIG.get("high_rsrc_threshold", 7.0)
+LOW_VARIANCE_THRESHOLD = CONFIG.get("low_variance_threshold", 0.3)
+CHUNK_SIZE = CONFIG.get("chunk_size", 65536)
 
 def compute_entropy(data: bytes) -> float:
     """Compute Shannon entropy for a byte sequence."""
@@ -19,6 +22,30 @@ def compute_entropy(data: bytes) -> float:
     entropy = 0.0
     for count in frequencies.values():
         probability = count / total
+        entropy -= probability * math.log2(probability)
+    return entropy
+
+def compute_entropy_chunked(filepath: str) -> float:
+    """Compute Shannon entropy using chunked reading for large files."""
+    frequencies = Counter()
+    total_bytes = 0
+    try:
+        with open(filepath, 'rb') as fh:
+            while True:
+                chunk = fh.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                frequencies.update(chunk)
+                total_bytes += len(chunk)
+    except Exception:
+        return 0.0
+    
+    if total_bytes == 0:
+        return 0.0
+    
+    entropy = 0.0
+    for count in frequencies.values():
+        probability = count / total_bytes
         entropy -= probability * math.log2(probability)
     return entropy
 
@@ -41,10 +68,9 @@ def check_entropy(pe: pefile.PE) -> tuple:
         elif sec_entropy > (HIGH_ENTROPY_THRESHOLD - 0.5):
             evidence.append(f'Medium-high entropy: {name} ({sec_entropy:.2f})')
             scores.append(0.3)
+    
     try:
-        with open(pe.filename, 'rb') as fh:
-            raw_file = fh.read()
-        whole_entropy = compute_entropy(raw_file)
+        whole_entropy = compute_entropy_chunked(pe.filename)
         if whole_entropy > WHOLE_FILE_THRESHOLD:
             evidence.append(
                 f'Whole-file entropy high: {whole_entropy:.2f} — '
@@ -53,12 +79,14 @@ def check_entropy(pe: pefile.PE) -> tuple:
             scores.append(0.7)
     except (AttributeError, FileNotFoundError):
         pass
+        
     if len(section_entropies) >= 2:
         mean = sum(section_entropies) / len(section_entropies)
         variance = sum((e - mean) ** 2 for e in section_entropies) / len(section_entropies)
         if variance < LOW_VARIANCE_THRESHOLD and all(e > HIGH_ENTROPY_THRESHOLD for e in section_entropies):
             evidence.append(f'Low entropy variance ({variance:.3f}) across all sections — uniformly packed')
             scores.append(0.9)
+            
     rsrc_entropy = None
     code_entropy = None
     for section in pe.sections:
@@ -67,6 +95,7 @@ def check_entropy(pe: pefile.PE) -> tuple:
             rsrc_entropy = section.get_entropy()
         if name in ('.text', '.code', 'code'):
             code_entropy = section.get_entropy()
+            
     if rsrc_entropy and code_entropy:
         if rsrc_entropy > HIGH_RSRC_THRESHOLD and code_entropy < LOW_ENTROPY_THRESHOLD:
             evidence.append(
@@ -74,5 +103,6 @@ def check_entropy(pe: pefile.PE) -> tuple:
                 f'({code_entropy:.2f}) + high-entropy resource ({rsrc_entropy:.2f})'
             )
             scores.append(0.85)
+            
     score = sum(scores) / max(len(scores), 1) if scores else 0.0
     return (min(score, 1.0), evidence)

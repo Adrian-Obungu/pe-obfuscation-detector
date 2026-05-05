@@ -1,0 +1,30 @@
+{
+  "verdict": {
+    "clean_threshold": 0.3,
+    "suspicious_threshold": 0.6
+  },
+  "entropy": {
+    "high_entropy_threshold": 7.0,
+    "whole_file_threshold": 6.8,
+    "low_entropy_threshold": 5.5,
+    "high_rsrc_threshold": 7.0,
+    "low_variance_threshold": 0.3,
+    "chunk_size": 65536
+  },
+  "sections": {
+    "suspicious_names": [
+      "UPX0", "UPX1", "UPX2", ".aspack", ".adata", ".MPRESS1", ".MPRESS2", 
+      ".petite", ".winapi", "pec1", "pec2", "pec", ".nsp0", ".nsp1", ".nsp2", 
+      ".yP", ".y0da", ".enigma", ".vmp0", ".vmp1", ".themida", ".sforce", 
+      ".safedisc", ".securom", ".ndrv"
+    ],
+    "min_normal_count": 3,
+    "max_normal_count": 8,
+    "raw_virtual_ratio_high": 5.0,
+    "raw_virtual_ratio_low": 0.2
+  },
+  "signatures": {
+    "default_min_ep_length": 4,
+    "max_ep_bytes": 256
+  }
+}

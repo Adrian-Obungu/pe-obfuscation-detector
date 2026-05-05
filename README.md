@@ -70,6 +70,30 @@ The engine provides a **Visual Forensic Map** to interpret binary data at a glan
 
 ## 🛠️ Installation & Usage
 
+### CI/CD Integration
+
+`pedetect` can be integrated into GitHub Actions to automatically scan release artifacts. If any binary is flagged as `PACKED`, the pipeline will fail, preventing obfuscated code from reaching production.
+
+**Example Workflow (`.github/workflows/pedetect-scan.yml`):**
+```yaml
+name: pedetect Scan
+on:
+  release:
+    types: [published]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pedetect
+      - name: Scan Artifacts
+        run: |
+          for file in ./artifacts/*.exe; do
+            pedetect "$file" --json -f result.json
+            if [[ $(jq -r '.verdict' result.json) == "PACKED" ]]; then exit 1; fi
+          done
+```
+
 ### Minimal Environment Setup
 Designed to run flawlessly on mobile-first environments (Codespaces, Termux) and standard workstations.
 
