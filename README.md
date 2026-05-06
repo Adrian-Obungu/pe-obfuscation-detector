@@ -70,30 +70,6 @@ The engine provides a **Visual Forensic Map** to interpret binary data at a glan
 
 ## 🛠️ Installation & Usage
 
-### CI/CD Integration
-
-`pedetect` can be integrated into GitHub Actions to automatically scan release artifacts. If any binary is flagged as `PACKED`, the pipeline will fail, preventing obfuscated code from reaching production.
-
-**Example Workflow (`.github/workflows/pedetect-scan.yml`):**
-```yaml
-name: pedetect Scan
-on:
-  release:
-    types: [published]
-jobs:
-  scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: pip install pedetect
-      - name: Scan Artifacts
-        run: |
-          for file in ./artifacts/*.exe; do
-            pedetect "$file" --json -f result.json
-            if [[ $(jq -r '.verdict' result.json) == "PACKED" ]]; then exit 1; fi
-          done
-```
-
 ### Minimal Environment Setup
 Designed to run flawlessly on mobile-first environments (Codespaces, Termux) and standard workstations.
 
@@ -113,15 +89,20 @@ python -m pedetect.cli target_binary.exe
 
 # High-Fidelity Forensic Audit (Verbose + Heatmap)
 python -m pedetect.cli target_binary.exe -vv --heatmap
+
+# Export Evidence as YARA Rule (v0.3.0)
+python -m pedetect.cli target_binary.exe --yara
 ```
 
 ---
 
 ## 🗺️ Enhancement Roadmap
-- [ ] **Rich Header Forensics**: MSVC metadata auditing for toolchain identification.
-- [ ] **IAT Redline Analysis**: Detecting hooked or redirected Import Address Tables.
-- [ ] **Verdict Narrative Engine**: AI-driven natural language explanations of detection evidence.
-- [ ] **D3.js Export**: Full interactive HTML forensic reports.
+- [x] **Rich Header Forensics**: MSVC metadata auditing for toolchain identification.
+- [x] **IAT Redline Analysis**: Detecting hooked or redirected Import Address Tables.
+- [x] **Verdict Narrative Engine**: AI-driven natural language explanations of detection evidence.
+- [x] **D3.js Export**: Full interactive HTML forensic reports.
+- [ ] **YARA Signature Generation**: Automatic conversion of forensic evidence into scan-ready rules. (Phase 2)
+- [ ] **CI/CD Integration**: Automated scan workflows for release artifact validation.
 
 ---
 
