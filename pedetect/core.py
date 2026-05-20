@@ -155,9 +155,40 @@ def analyze_file(filepath, weights_path=None, sig_db=None):
     for sec in pe.sections:
         sec_name = sec.Name.decode('utf-8', errors='replace').rstrip('\x00').strip()
         sec_ent = sec.get_entropy()
-        section_entropy.append({'name': sec_name, 'entropy': round(sec_ent, 2)})
+        # Contextual anomaly detection
+        is_anomaly = False
+        anomaly_reason = ""
+        sec_chars = sec.Characteristics
+        is_rwx = (sec_chars & 0x20000000) and (sec_chars & 0x40000000) and (sec_chars & 0x80000000)
+        if sec_ent > 7.0:
+            if sec_name.lower() in ('.text', '.code', 'code'):
+                is_anomaly = True
+                anomaly_reason = "High entropy in executable section — likely encrypted payload"
+            elif sec_name.lower() in ('.rsrc', '.rdata'):
+                is_anomaly = True
+                anomaly_reason = "High entropy in resource/data section — possible hidden payload"
+            else:
+                is_anomaly = True
+                anomaly_reason = "High entropy detected — potential obfuscation"
+        if is_rwx:
+            is_anomaly = True
+            anomaly_reason = (anomaly_reason + "; " if anomaly_reason else "") + "RWX permissions — self-modifying code"
+        section_entropy.append({
+            'name': sec_name,
+            'entropy': round(sec_ent, 2),
+            'anomaly': is_anomaly,
+            'anomaly_reason': anomaly_reason,
+            'characteristics': hex(sec_chars)
+        })
     if overlay_size > 0:
-        section_entropy.append({'name': f'[OVERLAY {overlay_size}B]', 'entropy': round(overlay_entropy_val, 2)})
+        ov_anomaly = overlay_entropy_val > 7.0
+        section_entropy.append({
+            'name': f'[OVERLAY {overlay_size}B]',
+            'entropy': round(overlay_entropy_val, 2),
+            'anomaly': ov_anomaly,
+            'anomaly_reason': 'High entropy overlay — possible appended payload' if ov_anomaly else '',
+            'characteristics': 'N/A'
+        })
     result['section_entropy'] = section_entropy
     result['section_names'] = [s['name'] for s in section_entropy]
     result['entry_point'] = pe.OPTIONAL_HEADER.AddressOfEntryPoint

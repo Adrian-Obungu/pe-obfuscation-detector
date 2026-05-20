@@ -90,8 +90,14 @@ python -m pedetect.cli target_binary.exe
 # High-Fidelity Forensic Audit (Verbose + Heatmap)
 python -m pedetect.cli target_binary.exe -vv --heatmap
 
-# Export Evidence as YARA Rule (v0.3.0)
+# Export Evidence as YARA Rule
 python -m pedetect.cli target_binary.exe --yara
+
+# Interactive TUI Dashboard (v0.3.1)
+python -m pedetect.cli target_binary.exe --tui
+
+# Generate Standalone HTML Report with D3.js Visualizations (v0.3.1)
+python -m pedetect.cli target_binary.exe --html report.html
 ```
 
 ---
@@ -101,8 +107,12 @@ python -m pedetect.cli target_binary.exe --yara
 - [x] **IAT Redline Analysis**: Detecting hooked or redirected Import Address Tables.
 - [x] **Verdict Narrative Engine**: AI-driven natural language explanations of detection evidence.
 - [x] **D3.js Export**: Full interactive HTML forensic reports.
-- [ ] **YARA Signature Generation**: Automatic conversion of forensic evidence into scan-ready rules. (Phase 2)
+- [x] **YARA Signature Generation**: Automatic conversion of forensic evidence into scan-ready rules.
+- [x] **Interactive TUI Dashboard**: Multi-panel forensic workstation powered by Textual.
+- [x] **Spectral Entropy Mapping**: Color-coded section visualization with contextual anomaly detection.
+- [x] **Standalone HTML Reports**: Production-grade D3.js reports with spectral maps and scoring charts.
 - [ ] **CI/CD Integration**: Automated scan workflows for release artifact validation.
+- [ ] **Hybrid Analysis Environment**: Live server with hex inspector and real-time correlation.
 
 ---
 

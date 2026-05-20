@@ -23,8 +23,10 @@ def main():
     p.add_argument('-vv', '--very-verbose', action='store_true', help='Show weighted scoring table')
     p.add_argument('--heatmap', action='store_true', help='Show visual heatmap of scores and entropy')
     p.add_argument('--explain', action='store_true', help='Show human‑readable verdict explanation')
-    p.add_argument('--html', action='store_true', help='Generate standalone interactive HTML report')
+    p.add_argument('--html', metavar='OUTPUT', nargs='?', const='report.html',
+                   help='Generate standalone interactive HTML report (optionally specify output path)')
     p.add_argument('--dashboard', action='store_true', help='Show rich terminal dashboard')
+    p.add_argument('--tui', action='store_true', help='Launch interactive TUI dashboard (Textual)')
     p.add_argument('--yara', action='store_true', help='Export evidence as YARA rule')
     p.add_argument('-o', '--output', choices=['text','json'], default='text')
     p.add_argument('-f', '--file', help='Save output to file')
@@ -40,12 +42,33 @@ def main():
 
     result = analyze_file(args.target, sig_db=args.sigdb)
 
+    # TUI mode (interactive Textual dashboard)
+    if args.tui:
+        try:
+            from pedetect.tui import launch_tui
+            launch_tui(result)
+        except ImportError:
+            print('[ERROR] "textual" library required for TUI. Install with: pip install textual', file=sys.stderr)
+            sys.exit(1)
+        return
+
     if args.dashboard:
         format_dashboard(result)
         return
+
+    # HTML report generation (standalone with D3.js and spectral mapping)
     if args.html:
-        out = format_html_report(result)
-    elif args.output == 'json':
+        from pedetect.html_report import generate_full_html_report
+        html_output = generate_full_html_report(result)
+        html_path = args.html if args.html != 'report.html' else 'report.html'
+        if args.file:
+            html_path = args.file
+        with open(html_path, 'w') as f:
+            f.write(html_output)
+        print(f"[OK] Interactive HTML report saved to: {html_path}")
+        return
+
+    if args.output == 'json':
         out = json.dumps(result, indent=2)
     else:
         out = f"File: {result['file']['path']}\nMD5:  {result['file']['md5']}\nSHA256: {result['file']['sha256']}\nSize: {result['file']['size']} bytes\nVerdict: {result['verdict']} ({result['confidence']:.2%})"
